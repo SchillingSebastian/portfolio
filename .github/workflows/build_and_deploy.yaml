@@ -18,7 +18,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
-          repository: schillingsebastian/portfolio/server
+          repository: schillingsebastian/portfolio/portfolio-server
           tag_with_ref: true
       - name: Deploy to server
         uses: appleboy/ssh-action@master
@@ -28,8 +28,8 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             docker login
-            docker pull docker.pkg.github.com/schillingsebastian/portfolio/server:production
+            docker pull docker.pkg.github.com/schillingsebastian/portfolio/portfolio-server:production
             docker stop portfolio
             docker rm portfolio
             docker run --name=portfolio --restart=always -p 8082:80 \
-              -d docker.pkg.github.com/schillingsebastian/portfolio/server:production
+              -d docker.pkg.github.com/schillingsebastian/portfolio/portfolio-server:production
