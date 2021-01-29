@@ -1,0 +1,35 @@
+name: Deploy Docker and restart
+on:
+  push:
+    branches:
+      - production
+jobs:
+  publish_docker_image_github:
+    name: Build and publish Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          context: .
+          file: ./Dockerfile
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: schillingsebastian/portfolio/server
+          tag_with_ref: true
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            docker login
+            docker pull docker.pkg.github.com/schillingsebastian/portfolio/server:production
+            docker stop portfolio
+            docker rm portfolio
+            docker run --name=portfolio --restart=always -p 8082:80 \
+              -d docker.pkg.github.com/schillingsebastian/portfolio/server:production
